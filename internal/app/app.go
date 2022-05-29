@@ -14,7 +14,6 @@ import (
 	. "go-service/internal/model"
 	. "go-service/internal/repository"
 	. "go-service/internal/service"
-	// "go-service/pkg/client"
 )
 
 type ApplicationContext struct {

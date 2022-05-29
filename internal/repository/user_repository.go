@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
+	q "github.com/core-go/sql"
+	"reflect"
 
 	. "go-service/internal/model"
 )
@@ -26,69 +27,43 @@ type userRepository struct {
 }
 
 func (r *userRepository) Load(ctx context.Context, id string) (*User, error) {
-	query := "select id, username, email, phone, date_of_birth from users where id = ?"
-	rows, err := r.DB.QueryContext(ctx, query, id)
+	var users []User
+	query := fmt.Sprintf("select id, username, email, phone, date_of_birth from users where id = %s limit 1", q.BuildParam(1))
+	err := q.Query(ctx, r.DB, nil, &users, query, id)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var user User
-		err = rows.Scan(&user.Id, &user.Username, &user.Phone, &user.Email, &user.DateOfBirth)
-		return &user, nil
+	if len(users) > 0 {
+		return &users[0], nil
 	}
 	return nil, nil
 }
 
 func (r *userRepository) Create(ctx context.Context, user *User) (int64, error) {
-	query := "insert into users (id, username, email, phone, date_of_birth) values (?, ?, ?, ?, ?)"
-	stmt, er0 := r.DB.Prepare(query)
-	if er0 != nil {
-		return -1, nil
-	}
-	res, er1 := stmt.ExecContext(ctx, user.Id, user.Username, user.Email, user.Phone, user.DateOfBirth)
-	if er1 != nil {
+	query, args := q.BuildToInsert("users", user, q.BuildParam)
+	res, err := r.DB.ExecContext(ctx, query, args...)
+	if err != nil {
 		return -1, nil
 	}
 	return res.RowsAffected()
 }
 
 func (r *userRepository) Update(ctx context.Context, user *User) (int64, error) {
-	query := "update users set username = ?, email = ?, phone = ?, date_of_birth = ? where id = ?"
-	stmt, er0 := r.DB.Prepare(query)
-	if er0 != nil {
+	query, args := q.BuildToUpdate("users", user, q.BuildParam)
+	res, err := r.DB.ExecContext(ctx, query, args...)
+	if err != nil {
 		return -1, nil
-	}
-	res, er1 := stmt.ExecContext(ctx, user.Username, user.Email, user.Phone, user.DateOfBirth, user.Id)
-	if er1 != nil {
-		return -1, er1
 	}
 	return res.RowsAffected()
 }
 
 func (r *userRepository) Patch(ctx context.Context, user map[string]interface{}) (int64, error) {
-	updateClause := "update users set"
-	whereClause := fmt.Sprintf("where id='%s'", user["id"])
-
-	setClause := make([]string, 0)
-	if user["username"] != nil {
-		msg := fmt.Sprintf("username='%s'", fmt.Sprint(user["username"]))
-		setClause = append(setClause, msg)
-	}
-	if user["email"] != nil {
-		msg := fmt.Sprintf("email='%s'", fmt.Sprint(user["email"]))
-		setClause = append(setClause, msg)
-	}
-	if user["phone"] != nil {
-		msg := fmt.Sprintf("phone='%s'", fmt.Sprint(user["phone"]))
-		setClause = append(setClause, msg)
-	}
-
-	setClauseRes := strings.Join(setClause, ",")
-	querySlice := []string{updateClause, setClauseRes, whereClause}
-	query := strings.Join(querySlice, " ")
-
-	res, err := r.DB.ExecContext(ctx, query)
+	userType := reflect.TypeOf(User{})
+	jsonColumnMap := q.MakeJsonColumnMap(userType)
+	colMap := q.JSONToColumns(user, jsonColumnMap)
+	keys, _ := q.FindPrimaryKeys(userType)
+	query, args := q.BuildToPatch("users", colMap, keys, q.BuildParam)
+	res, err := r.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return -1, err
 	}
