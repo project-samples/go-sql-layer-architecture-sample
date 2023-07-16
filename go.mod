@@ -3,21 +3,17 @@ module go-service
 go 1.15
 
 require (
-	github.com/core-go/client v0.1.0
+	github.com/core-go/client v0.2.3
 	github.com/core-go/config v0.1.0
-	github.com/core-go/health v0.4.7
-	github.com/core-go/log v0.0.8
-	github.com/core-go/search v0.2.5
-	github.com/core-go/service v0.2.1
-	github.com/core-go/sql v0.3.1
-	github.com/go-sql-driver/mysql v1.6.0
+	github.com/core-go/core v0.3.5
+	github.com/core-go/health v0.4.8
+	github.com/core-go/log v0.1.3
+	github.com/core-go/search v0.2.12
+	github.com/core-go/sql v0.3.11
+	github.com/go-playground/validator/v10 v10.14.1 // indirect
 	github.com/gorilla/mux v1.8.0
-	github.com/kr/pretty v0.3.0 // indirect
-	github.com/rogpeppe/go-internal v1.8.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
-	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
+	github.com/lib/pq v1.10.9
+	go.uber.org/zap v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
