@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"github.com/core-go/core"
 
 	v "github.com/core-go/core/v10"
 	"github.com/core-go/health"
@@ -24,14 +25,18 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 	logError := log.LogError
-	validator := v.NewValidator()
+	action := core.InitializeAction(cfg.Action)
+	validator, err := v.NewValidator()
+	if err != nil {
+		return nil, err
+	}
 
 	userRepository, err := NewUserAdapter(db, BuildQuery)
 	if err != nil {
 		return nil, err
 	}
 	userService := NewUserService(userRepository)
-	userHandler := NewUserHandler(userService, validator.Validate, logError)
+	userHandler := NewUserHandler(userService, logError, validator.Validate, &action)
 
 	sqlChecker := q.NewHealthChecker(db)
 	healthHandler := health.NewHandler(sqlChecker)
