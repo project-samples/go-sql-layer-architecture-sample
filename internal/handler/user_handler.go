@@ -31,8 +31,12 @@ type UserHandler struct {
 func (h *UserHandler) Load(w http.ResponseWriter, r *http.Request) {
 	id := core.GetRequiredParam(w, r)
 	if len(id) > 0 {
-		res, err := h.service.Load(r.Context(), id)
-		core.Return(w, r, res, err, h.Error, nil)
+		user, err := h.service.Load(r.Context(), id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		core.JSON(w, core.IsFound(user), user)
 	}
 }
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
