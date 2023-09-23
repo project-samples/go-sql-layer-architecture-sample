@@ -6,8 +6,8 @@ require (
 	github.com/core-go/client v1.0.0
 	github.com/core-go/config v1.0.1
 	github.com/core-go/core v0.3.8
-	github.com/core-go/health v0.5.0
-	github.com/core-go/log v0.1.5
+	github.com/core-go/health v0.5.1
+	github.com/core-go/log v1.0.0
 	github.com/core-go/search v0.3.1
 	github.com/core-go/sql v0.5.2
 	github.com/gorilla/mux v1.8.0
