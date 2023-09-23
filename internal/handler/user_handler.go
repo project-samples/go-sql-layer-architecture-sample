@@ -14,17 +14,14 @@ import (
 func NewUserHandler(service UserService, logError core.Log, validate core.Validate, action *core.ActionConfig) *UserHandler {
 	modelType := reflect.TypeOf(User{})
 	params := core.CreateParams(modelType, logError, validate, action)
-	filterType := reflect.TypeOf(UserFilter{})
-	paramIndex, filterIndex, csvIndex, _ := s.CreateParams(filterType, modelType)
-	return &UserHandler{service: service, Params: params, paramIndex: paramIndex, filterIndex: filterIndex, Map: csvIndex}
+	parameters := s.CreateParameters(reflect.TypeOf(UserFilter{}), modelType)
+	return &UserHandler{service: service, Params: params, Parameters: parameters}
 }
 
 type UserHandler struct {
 	service UserService
 	*core.Params
-	paramIndex  map[string]int
-	filterIndex int
-	Map         map[string]int
+	*s.Parameters
 }
 
 func (h *UserHandler) Load(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +77,7 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 func (h *UserHandler) Search(w http.ResponseWriter, r *http.Request) {
 	filter := UserFilter{Filter: &s.Filter{}}
-	s.Decode(r, &filter, h.paramIndex, h.filterIndex)
+	s.Decode(r, &filter, h.ParamIndex, h.FilterIndex)
 
 	var users []User
 	users, total, err := h.service.Search(r.Context(), &filter)
@@ -89,7 +86,7 @@ func (h *UserHandler) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(filter.Fields) > 0 {
-		out, ok := s.ResultCsv(filter.Fields, users, total, h.Map)
+		out, ok := s.ResultCsv(filter.Fields, users, total, h.CSVIndex)
 		if ok {
 			s.CSV(w, http.StatusOK, out)
 			return
