@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/core-go/core"
-	"github.com/core-go/core/search"
 	s "github.com/core-go/search"
 	"net/http"
 	"reflect"
@@ -16,16 +15,16 @@ func NewUserHandler(service UserService, logError core.Log, validate core.Valida
 	modelType := reflect.TypeOf(User{})
 	params := core.CreateParams(modelType, logError, validate, action)
 	filterType := reflect.TypeOf(UserFilter{})
-	paramIndex, filterIndex := s.BuildParams(filterType)
-	return &UserHandler{service: service, Params: params, paramIndex: paramIndex, filterIndex: filterIndex}
+	paramIndex, filterIndex, csvIndex, _ := s.CreateParams(filterType, modelType)
+	return &UserHandler{service: service, Params: params, paramIndex: paramIndex, filterIndex: filterIndex, Map: csvIndex}
 }
 
 type UserHandler struct {
 	service UserService
-	*search.SearchHandler
 	*core.Params
 	paramIndex  map[string]int
 	filterIndex int
+	Map         map[string]int
 }
 
 func (h *UserHandler) Load(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +87,13 @@ func (h *UserHandler) Search(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+	if len(filter.Fields) > 0 {
+		out, ok := s.ResultCsv(filter.Fields, users, total, h.Map)
+		if ok {
+			s.CSV(w, http.StatusOK, out)
+			return
+		}
 	}
 	core.JSON(w, http.StatusOK, &s.Result{List: &users, Total: total})
 }
