@@ -21,7 +21,6 @@ func NewUserHandler(service UserService, logError core.Log, validate core.Valida
 type UserHandler struct {
 	service UserService
 	*core.Parameters
-	// *s.Parameters
 }
 
 func (h *UserHandler) Load(w http.ResponseWriter, r *http.Request) {
