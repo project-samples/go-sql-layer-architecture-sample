@@ -12,9 +12,9 @@ import (
 )
 
 func NewUserHandler(service UserService, logError core.Log, validate core.Validate, action *core.ActionConf) *UserHandler {
-	modelType := reflect.TypeOf(User{})
-	p := s.CreateParameters(reflect.TypeOf(UserFilter{}), modelType)
-	params := core.CreateParameters(modelType, logError, validate, action, p.ParamIndex, p.FilterIndex, p.CSVIndex)
+	userType := reflect.TypeOf(User{})
+	paramIndex, filterIndex, csvIndex, _ := s.CreateParams(reflect.TypeOf(UserFilter{}), userType)
+	params := core.CreateParameters(userType, logError, validate, action, paramIndex, filterIndex, csvIndex)
 	return &UserHandler{service: service, Parameters: params}
 }
 
