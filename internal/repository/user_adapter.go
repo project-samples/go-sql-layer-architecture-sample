@@ -22,23 +22,17 @@ func NewUserAdapter(db *sql.DB, buildQuery func(*UserFilter) (string, []interfac
 			return userQueryBuilder.BuildQuery(filter)
 		}
 	}
-	fieldsIndex, schema, jsonColumnMap, keys, _, fields, buildParam, _,  err := q.Init(userType, db)
+	params, err := q.CreateParams(userType, db)
 	if err != nil {
 		return nil, err
 	}
-	return &UserAdapter{DB: db, ModelType: userType, Map: fieldsIndex, Schema: schema, JsonColumnMap: jsonColumnMap, Keys: keys, Fields: fields, BuildParam: buildParam, BuildQuery: buildQuery}, nil
+	return &UserAdapter{DB: db, Params: params, BuildQuery: buildQuery}, nil
 }
 
 type UserAdapter struct {
-	DB            *sql.DB
-	ModelType     reflect.Type
-	Map           map[string]int
-	Fields        string
-	Keys          []string
-	Schema        *q.Schema
-	JsonColumnMap map[string]string
-	BuildParam    func(i int) string
-	BuildQuery    func(*UserFilter) (string, []interface{})
+	DB         *sql.DB
+	BuildQuery func(*UserFilter) (string, []interface{})
+	*q.Params
 }
 
 func (r *UserAdapter) Load(ctx context.Context, id string) (*User, error) {
