@@ -25,7 +25,7 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 	logError := log.LogError
-	action := core.InitializeAction(cfg.Action)
+	action := core.InitAction(cfg.Action)
 	validator, err := v.NewValidator()
 	if err != nil {
 		return nil, err

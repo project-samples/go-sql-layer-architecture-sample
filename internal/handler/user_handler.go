@@ -11,17 +11,17 @@ import (
 	. "go-service/internal/service"
 )
 
-func NewUserHandler(service UserService, logError core.Log, validate core.Validate, action *core.ActionConfig) *UserHandler {
+func NewUserHandler(service UserService, logError core.Log, validate core.Validate, action *core.ActionConf) *UserHandler {
 	modelType := reflect.TypeOf(User{})
-	params := core.CreateParams(modelType, logError, validate, action)
-	parameters := s.CreateParameters(reflect.TypeOf(UserFilter{}), modelType)
-	return &UserHandler{service: service, Params: params, Parameters: parameters}
+	p := s.CreateParameters(reflect.TypeOf(UserFilter{}), modelType)
+	params := core.CreateParameters(modelType, logError, validate, action, p.ParamIndex, p.FilterIndex, p.CSVIndex)
+	return &UserHandler{service: service, Parameters: params}
 }
 
 type UserHandler struct {
 	service UserService
-	*core.Params
-	*s.Parameters
+	*core.Parameters
+	// *s.Parameters
 }
 
 func (h *UserHandler) Load(w http.ResponseWriter, r *http.Request) {
