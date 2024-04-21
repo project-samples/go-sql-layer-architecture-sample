@@ -50,18 +50,20 @@ func (r *UserAdapter) Load(ctx context.Context, id string) (*User, error) {
 
 func (r *UserAdapter) Create(ctx context.Context, user *User) (int64, error) {
 	query, args := q.BuildToInsert("users", user, r.BuildParam)
-	res, err := r.DB.ExecContext(ctx, query, args...)
+	tx := q.GetExec(ctx, r.DB)
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return -1, nil
+		return -1, err
 	}
 	return res.RowsAffected()
 }
 
 func (r *UserAdapter) Update(ctx context.Context, user *User) (int64, error) {
 	query, args := q.BuildToUpdate("users", user, r.BuildParam)
-	res, err := r.DB.ExecContext(ctx, query, args...)
+	tx := q.GetExec(ctx, r.DB)
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return -1, nil
+		return -1, err
 	}
 	return res.RowsAffected()
 }
@@ -69,7 +71,8 @@ func (r *UserAdapter) Update(ctx context.Context, user *User) (int64, error) {
 func (r *UserAdapter) Patch(ctx context.Context, user map[string]interface{}) (int64, error) {
 	colMap := q.JSONToColumns(user, r.JsonColumnMap)
 	query, args := q.BuildToPatch("users", colMap, r.Keys, r.BuildParam)
-	res, err := r.DB.ExecContext(ctx, query, args...)
+	tx := q.GetExec(ctx, r.DB)
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return -1, err
 	}
@@ -78,13 +81,10 @@ func (r *UserAdapter) Patch(ctx context.Context, user map[string]interface{}) (i
 
 func (r *UserAdapter) Delete(ctx context.Context, id string) (int64, error) {
 	query := "delete from users where id = ?"
-	stmt, er0 := r.DB.Prepare(query)
-	if er0 != nil {
-		return -1, nil
-	}
-	res, er1 := stmt.ExecContext(ctx, id)
-	if er1 != nil {
-		return -1, er1
+	tx := q.GetExec(ctx, r.DB)
+	res, err := tx.ExecContext(ctx, query, id)
+	if err != nil {
+		return -1, err
 	}
 	return res.RowsAffected()
 }
